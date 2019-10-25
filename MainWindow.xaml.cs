@@ -29,7 +29,7 @@ namespace TPEGW
         int currentColum = 0;
         public string mapId;
         string[] map;
-
+        string databaseConnectionString = @"Data Source=C:\databases\tpegw-game.db; Version=3;";
         public MainWindow()
         {
             InitializeComponent();
@@ -68,52 +68,79 @@ namespace TPEGW
 
         }
 
+        private Image[,] CreateMapGrid()
+        {
+
+            double rows = canvas1.ActualHeight / 64;
+            double columns = canvas1.ActualWidth / 64;
+            Image[,] images = new Image[(int)rows,(int) columns];
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int column = 0; column < columns; column++)
+                {
+                    Image image = new Image();
+                    image.Source = new BitmapImage(new Uri(@"C:\repos\TPEGW\assets\dungeon\floor\black_cobalt_4.png", UriKind.Absolute));
+                    image.Width = 64;
+                    image.Height = 64;
+                    canvas1.Children.Add(image);
+                    Canvas.SetTop(image, 64 * row);
+                    Canvas.SetLeft(image, 64 * column);
+
+                    Canvas.SetZIndex(image, -1);
+                    images[row, column] = image;
+                }
+
+            }
+            return images;
+        }
+
         public void DrawMapOnScreen(string[] map, int currentRow, int currentColumn)
         {
 
 
-            imgImage00.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn].ToString()), UriKind.Absolute));
-            imgImage01.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 1].ToString()), UriKind.Absolute));
-            imgImage02.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 2].ToString()), UriKind.Absolute));
-            imgImage03.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 3].ToString()), UriKind.Absolute));
-            imgImage04.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 4].ToString()), UriKind.Absolute));
-            imgImage05.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 5].ToString()), UriKind.Absolute));
-            imgImage06.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 6].ToString()), UriKind.Absolute));
-            imgImage10.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn].ToString()), UriKind.Absolute));
-            imgImage11.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 1].ToString()), UriKind.Absolute));
-            imgImage12.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 2].ToString()), UriKind.Absolute));
-            imgImage13.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 3].ToString()), UriKind.Absolute));
-            imgImage14.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 4].ToString()), UriKind.Absolute));
-            imgImage15.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 5].ToString()), UriKind.Absolute));
-            imgImage16.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 6].ToString()), UriKind.Absolute));
-            imgImage20.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 0].ToString()), UriKind.Absolute));
-            imgImage21.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 1].ToString()), UriKind.Absolute));
-            imgImage22.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 2].ToString()), UriKind.Absolute));
-            imgImage23.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 3].ToString()), UriKind.Absolute));
-            imgImage24.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 4].ToString()), UriKind.Absolute));
-            imgImage25.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 5].ToString()), UriKind.Absolute));
-            imgImage26.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 6].ToString()), UriKind.Absolute));
-            imgImage30.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 0].ToString()), UriKind.Absolute));
-            imgImage31.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 1].ToString()), UriKind.Absolute));
-            imgImage32.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 2].ToString()), UriKind.Absolute));
-            imgImage33.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 3].ToString()), UriKind.Absolute));
-            imgImage34.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 4].ToString()), UriKind.Absolute));
-            imgImage35.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 5].ToString()), UriKind.Absolute));
-            imgImage36.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 6].ToString()), UriKind.Absolute));
-            imgImage40.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 0].ToString()), UriKind.Absolute));
-            imgImage41.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 1].ToString()), UriKind.Absolute));
-            imgImage42.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 2].ToString()), UriKind.Absolute));
-            imgImage43.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 3].ToString()), UriKind.Absolute));
-            imgImage44.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 4].ToString()), UriKind.Absolute));
-            imgImage45.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 5].ToString()), UriKind.Absolute));
-            imgImage46.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 6].ToString()), UriKind.Absolute));
-            imgImage50.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 0].ToString()), UriKind.Absolute));
-            imgImage51.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 1].ToString()), UriKind.Absolute));
-            imgImage52.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 2].ToString()), UriKind.Absolute));
-            imgImage53.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 3].ToString()), UriKind.Absolute));
-            imgImage54.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 4].ToString()), UriKind.Absolute));
-            imgImage55.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 5].ToString()), UriKind.Absolute));
-            imgImage56.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 6].ToString()), UriKind.Absolute));
+            //imgImage00.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn].ToString()), UriKind.Absolute));
+            //imgImage01.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 1].ToString()), UriKind.Absolute));
+            //imgImage02.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 2].ToString()), UriKind.Absolute));
+            //imgImage03.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 3].ToString()), UriKind.Absolute));
+            //imgImage04.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 4].ToString()), UriKind.Absolute));
+            //imgImage05.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 5].ToString()), UriKind.Absolute));
+            //imgImage06.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow][currentColumn + 6].ToString()), UriKind.Absolute));
+            //imgImage10.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn].ToString()), UriKind.Absolute));
+            //imgImage11.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 1].ToString()), UriKind.Absolute));
+            //imgImage12.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 2].ToString()), UriKind.Absolute));
+            //imgImage13.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 3].ToString()), UriKind.Absolute));
+            //imgImage14.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 4].ToString()), UriKind.Absolute));
+            //imgImage15.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 5].ToString()), UriKind.Absolute));
+            //imgImage16.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 1][currentColumn + 6].ToString()), UriKind.Absolute));
+            //imgImage20.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 0].ToString()), UriKind.Absolute));
+            //imgImage21.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 1].ToString()), UriKind.Absolute));
+            //imgImage22.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 2].ToString()), UriKind.Absolute));
+            //imgImage23.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 3].ToString()), UriKind.Absolute));
+            //imgImage24.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 4].ToString()), UriKind.Absolute));
+            //imgImage25.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 5].ToString()), UriKind.Absolute));
+            //imgImage26.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 2][currentColumn + 6].ToString()), UriKind.Absolute));
+            //imgImage30.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 0].ToString()), UriKind.Absolute));
+            //imgImage31.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 1].ToString()), UriKind.Absolute));
+            //imgImage32.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 2].ToString()), UriKind.Absolute));
+            //imgImage33.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 3].ToString()), UriKind.Absolute));
+            //imgImage34.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 4].ToString()), UriKind.Absolute));
+            //imgImage35.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 5].ToString()), UriKind.Absolute));
+            //imgImage36.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 3][currentColumn + 6].ToString()), UriKind.Absolute));
+            //imgImage40.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 0].ToString()), UriKind.Absolute));
+            //imgImage41.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 1].ToString()), UriKind.Absolute));
+            //imgImage42.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 2].ToString()), UriKind.Absolute));
+            //imgImage43.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 3].ToString()), UriKind.Absolute));
+            //imgImage44.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 4].ToString()), UriKind.Absolute));
+            //imgImage45.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 5].ToString()), UriKind.Absolute));
+            //imgImage46.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 4][currentColumn + 6].ToString()), UriKind.Absolute));
+            //imgImage50.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 0].ToString()), UriKind.Absolute));
+            //imgImage51.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 1].ToString()), UriKind.Absolute));
+            //imgImage52.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 2].ToString()), UriKind.Absolute));
+            //imgImage53.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 3].ToString()), UriKind.Absolute));
+            //imgImage54.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 4].ToString()), UriKind.Absolute));
+            //imgImage55.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 5].ToString()), UriKind.Absolute));
+            //imgImage56.Source = new BitmapImage(new Uri(GetImagePath(map[currentRow + 5][currentColumn + 6].ToString()), UriKind.Absolute));
 
 
 
@@ -137,7 +164,7 @@ namespace TPEGW
 
             // loop through the results and create a map cell object for each and put it into cells array
 
-            SQLiteConnection connection = new SQLiteConnection(@"Data Source=C:\databases\tpegw-game.db; Version=3;");
+            SQLiteConnection connection = new SQLiteConnection(databaseConnectionString);
             connection.Open();
 
             SQLiteCommand command = new SQLiteCommand($"select * from map where name = '{levelName}'", connection);
@@ -185,61 +212,6 @@ namespace TPEGW
 
 
 
-        public string GetImagePath(string cellType)
-        {
-
-
-
-
-
-
-            string cellPath = "";
-
-            if (cellType == "S")
-            {
-                return @"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full\dungeon\floor\pedestal_full.png";
-            }
-            else if (cellType == "G")
-            {
-                return @"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full\dungeon\floor\dirt_full_new.png";
-            }
-            else if (cellType == "V")
-            {
-                return @"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full\dungeon\water\shoals_deep_water_2_bubbles.png";
-
-            }
-            else if (cellType == "O")
-            {
-                return @"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full\dungeon\floor\ice_0_old.png";
-
-            }
-            else if (cellType == "Q")
-            {
-                return @"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full\dungeon\floor\floor_sand_stone_2.png";
-            }
-            else if (cellType == "L")
-            {
-                return @"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full\dungeon\floor\dirt_southwest_new.png";
-            }
-            else if (cellType == "J")
-            {
-                return @"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full\dungeon\floor\mesh_1_old.png";
-            }
-            else if (cellType == "F")
-            {
-                return @"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full\dungeon\floor\white_marble_0.png";
-            }
-            else if (cellType == "")
-            {
-                return "";
-            }
-            else if (cellType == "")
-            {
-                return "";
-            }
-
-            return cellPath;
-        }
 
 
         public void Fight(LifeForm hero1, LifeForm hero2)
@@ -454,8 +426,6 @@ namespace TPEGW
 
 
 
-
-
         }
 
         private void CreateMap(string name, int rows, int columns)
@@ -500,8 +470,8 @@ namespace TPEGW
 
         private void Button_Click_4(object sender, RoutedEventArgs e)
         {
-
-            string[] allfiles = Directory.GetFiles(@"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full", "*.png", SearchOption.AllDirectories);
+            CreateMapGrid();
+           // string[] allfiles = Directory.GetFiles(@"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full", "*.png", SearchOption.AllDirectories);
 
 
 
