@@ -16,6 +16,8 @@ using System.Data.SQLite;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.IO;
+using System.Windows.Threading;
+using Antlr4.Runtime.Misc;
 
 namespace TPEGW
 {
@@ -26,30 +28,63 @@ namespace TPEGW
     {
         public string mapLoadTest;
         int currentRow = 0;
-        int currentColum = 0;
+        int currentColumn = 0;
+
+        int lastRow = int.MaxValue;
+        int lastColumn = int.MaxValue;
+
         public string mapId;
-        string[] map;
-        string databaseConnectionString = @"Data Source=C:\databases\tpegw-game.db; Version=3;";
+        private Image[,] canvasImages;
+        private MapCell[,] currentMap;
+        private Dictionary<string, string> imageAssetFiles;
+        string assetDirectory = @"C:\repos\TPEGW\assets\";
+        string databaseConnectionString = @"Data Source=C:\repos\TPEGW\database\tpegw-game.db; Version=3;";
         public MainWindow()
         {
             InitializeComponent();
+
+           
+
+        }
+
+        private void BtnSave_Click(object sender, RoutedEventArgs e)
+        {
+            //LoadMapLevel("level one");
+
+            //CreateMap("level two", 10, 10);
+
+            canvasImages = CreateImageGridOnCanvas();
+            currentMap = LoadMapLevel("level one");
+            imageAssetFiles = GetImageAssets();
+            DrawMapOnCanvasImages();
+
+            DispatcherTimer timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(.2);
+            timer.Tick += Timer_Tick;
+            timer.Start();
+
+        }
+
+        private void Timer_Tick(object sender, EventArgs e)
+        {
+            DrawMapOnCanvasImages();
+            Debug.WriteLine(DateTime.Now.ToString());
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
 
+            //LifeForm hero1 = new LifeForm();
+            //hero1.EquipedOffensiveItems.Add(CreateFlamingAxe());
+            //hero1.EquipedDefensiveItems.Add(CreateEnduringLeatherArmor());
+            //hero1.EquipedItems.Add(CreateRing());
+            //Debug.WriteLine(hero1.Endurance);
 
-            LifeForm hero1 = new LifeForm();
-            hero1.EquipedOffensiveItems.Add(CreateFlamingAxe());
-            hero1.EquipedDefensiveItems.Add(CreateEnduringLeatherArmor());
-            hero1.EquipedItems.Add(CreateRing());
-            Debug.WriteLine(hero1.Endurance);
+            //LifeForm hero2 = new LifeForm();
+            //hero2.EquipedOffensiveItems.Add(CreateFlamingAxe());
+            //hero2.BaseSpeed = 40;
 
-            LifeForm hero2 = new LifeForm();
-            hero2.EquipedOffensiveItems.Add(CreateFlamingAxe());
-            hero2.BaseSpeed = 40;
-
-            Debug.WriteLine(Dice.Roller.Roll("1d20+10").Value);
+            //Debug.WriteLine(Dice.Roller.Roll("1d20+10").Value);
 
             // Fight(hero1, hero2);
 
@@ -68,12 +103,80 @@ namespace TPEGW
 
         }
 
-        private Image[,] CreateMapGrid()
+
+        private void DrawMapOnCanvasImages()
         {
 
-            double rows = canvas1.ActualHeight / 64;
-            double columns = canvas1.ActualWidth / 64;
-            Image[,] images = new Image[(int)rows,(int) columns];
+            if (currentRow == lastRow && currentColumn == lastColumn)
+            {
+
+            }
+            else
+            {
+                lastColumn = currentColumn;
+                lastRow = currentRow;
+
+                for (int canvasImageRow = 0; canvasImageRow < canvasImages.GetLength(0); canvasImageRow++)
+                {
+                    for (int canvasImageColumn = 0; canvasImageColumn < canvasImages.GetLength(1); canvasImageColumn++)
+                    {
+                        if (canvasImageRow + currentRow < currentMap.GetLength(0) && canvasImageColumn + currentColumn < currentMap.GetLength(1) && canvasImageRow + currentRow >= 0 && canvasImageColumn + currentColumn >= 0)
+                        {
+                            MapCell currentMapCell = currentMap[canvasImageRow + currentRow, canvasImageColumn + currentColumn];
+
+                            BitmapImage bitmap = new BitmapImage();
+
+                            using (var stream = new FileStream(imageAssetFiles[currentMapCell.CellValue], FileMode.Open))
+                            {
+                                bitmap.BeginInit();
+                                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                                bitmap.StreamSource = stream;
+                                bitmap.EndInit();
+                            }
+
+                            bitmap.Freeze();
+
+                            if (((BitmapImage)canvasImages[canvasImageRow, canvasImageColumn].Source).StreamSource != null)
+                                ((BitmapImage)canvasImages[canvasImageRow, canvasImageColumn].Source).StreamSource.Dispose();
+
+
+                            canvasImages[canvasImageRow, canvasImageColumn].Source = bitmap;
+
+                        }
+                        else
+                        {
+                            BitmapImage bitmap = new BitmapImage();
+
+                            using (var stream = new FileStream(imageAssetFiles["black_cobalt_1"], FileMode.Open))
+                            {
+                                bitmap.BeginInit();
+                                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                                bitmap.StreamSource = stream;
+                                bitmap.EndInit();
+                            }
+
+                            bitmap.Freeze();
+
+                            if (((BitmapImage)canvasImages[canvasImageRow, canvasImageColumn].Source).StreamSource != null)
+                                ((BitmapImage)canvasImages[canvasImageRow, canvasImageColumn].Source).StreamSource.Dispose();
+
+                            canvasImages[canvasImageRow, canvasImageColumn].Source = bitmap;
+                        }
+
+
+                    }
+                }
+            }
+
+        }
+
+
+        private Image[,] CreateImageGridOnCanvas()
+        {
+
+            int rows = (int)canvas1.ActualHeight / 64;
+            int columns = (int)canvas1.ActualWidth / 64;
+            Image[,] images = new Image[(int)rows, (int)columns];
 
             for (int row = 0; row < rows; row++)
             {
@@ -95,6 +198,24 @@ namespace TPEGW
             return images;
         }
 
+        private Dictionary<string, string> GetImageAssets()
+        {
+            Dictionary<string, string> imageAssets = new Dictionary<string, string>();
+
+            string[] allAssetFiles = Directory.GetFiles(assetDirectory, "*.png", SearchOption.AllDirectories);
+
+            foreach (string assetFile in allAssetFiles)
+            {
+                string key = System.IO.Path.GetFileNameWithoutExtension(assetFile);
+                if (!imageAssets.ContainsKey(key))
+                {
+                    imageAssets.Add(key, assetFile);
+                }
+
+            }
+
+            return imageAssets;
+        }
         public void DrawMapOnScreen(string[] map, int currentRow, int currentColumn)
         {
 
@@ -151,6 +272,33 @@ namespace TPEGW
 
         }
 
+        private void CreateMap(string name, int rows, int columns)
+        {
+
+            Map map = new Map();
+
+            map.Name = name;
+            map.Width = rows;
+            map.Height = columns;
+            map.Save();
+
+            for (int mapRow = 0; mapRow < rows; mapRow++)
+            {
+                for (int mapColumn = 0; mapColumn < columns; mapColumn++)
+                {
+                    MapCell mapCell = new MapCell();
+
+                    mapCell.Row = mapRow;
+                    mapCell.Column = mapColumn;
+                    mapCell.CellValue = "0";
+                    mapCell.MapId = map.Id;
+                    mapCell.CellType = "0";
+
+                    mapCell.Save();
+
+                }
+            }
+        }
 
         private MapCell[,] LoadMapLevel(string levelName)
         {
@@ -190,9 +338,9 @@ namespace TPEGW
 
             while (dataReader.Read())
             {
-                
-               
-                
+
+
+
                 MapCell mapCell = new MapCell();
                 mapCell.Id = dataReader["id"].ToString();
                 mapCell.Row = int.Parse(dataReader["row"].ToString());
@@ -204,13 +352,20 @@ namespace TPEGW
                 mapCells[mapCell.Row, mapCell.Column] = mapCell;
 
             }
-            
+
 
             return mapCells;
         }
 
 
+        private void Button_Click_4(object sender, RoutedEventArgs e)
+        {
+            CreateImageGridOnCanvas();
+            // string[] allfiles = Directory.GetFiles(@"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full", "*.png", SearchOption.AllDirectories);
 
+
+
+        }
 
 
 
@@ -361,35 +516,15 @@ namespace TPEGW
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            //Canvas.SetLeft(imgImage1, Canvas.GetLeft(imgImage1) + 64 );
-            //Canvas.SetTop(imgImage1, 0);
-            if (currentColum < map[0].Length - 6)
-            {
-                currentColum++;
-                DrawMapOnScreen(map, currentRow, currentColum);
-            }
-
+            currentColumn++;
+          
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
         {
-            //Map mapCell = new Map();
-            //mapCell.Load("");
-
-
-            Image image1 = new Image();
-            canvas1.Children.Add(image1);
-            Canvas.SetTop(image1, 145);
-            Canvas.SetLeft(image1, 205);
-            image1.Source = new BitmapImage(new Uri(@"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full\dungeon\floor\dirt_southwest_new.png", UriKind.Absolute));
-            image1.Width = 32;
-            image1.Height = 32;
-
-            double x = Canvas.GetLeft(image1);
-            double y = Canvas.GetTop(image1);
 
             currentRow++;
-            DrawMapOnScreen(map, currentRow, currentColum);
+           
 
         }
 
@@ -402,55 +537,20 @@ namespace TPEGW
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
         {
-            if (currentColum > 0)
-            {
-                currentColum--;
-                DrawMapOnScreen(map, currentRow, currentColum);
-            }
+
+            currentColumn--;
+            
+
         }
 
         private void Button_Click_3(object sender, RoutedEventArgs e)
         {
-            if (currentRow > 0)
-            {
-                currentRow--;
-                DrawMapOnScreen(map, currentRow, currentColum);
-            }
+            currentRow--;
+
+            
         }
 
-        private void BtnSave_Click(object sender, RoutedEventArgs e)
-        {
-            LoadMapLevel("level one");
-
-            CreateMap("level two", 10, 10);
-
-
-
-        }
-
-        private void CreateMap(string name, int rows, int columns)
-        {
-
-            Map map = new Map();
-
-            map.Name = name;
-            map.Width = rows;
-            map.Height = columns;
-            map.Save();
-
-            for (int mapRow = 0; mapRow < rows; mapRow++)
-            {
-                for (int mapColumn = 0; mapColumn < columns; mapColumn++)
-                {
-                    MapCell mapCell = new MapCell();
-
-                    mapCell.Row = mapRow;
-                    mapCell.Column = mapColumn;
-                    mapCell.CellValue = "0";
-                    mapCell.MapId = map.Id;
-                    mapCell.CellType = "0";
-
-                    mapCell.Save();
+       
 
 
 
@@ -459,23 +559,6 @@ namespace TPEGW
 
 
 
-
-                }
-            }
-
-
-        }
-
-
-
-        private void Button_Click_4(object sender, RoutedEventArgs e)
-        {
-            CreateMapGrid();
-           // string[] allfiles = Directory.GetFiles(@"C:\Users\user\Downloads\Dungeon Crawl Stone Soup Full\Dungeon Crawl Stone Soup Full", "*.png", SearchOption.AllDirectories);
-
-
-
-        }
 
 
     }
